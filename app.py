@@ -145,11 +145,29 @@ def init_parameter_session_state():
         # Multi-domain state
         "domain_configs": {}, # Stores {domain_name: {num_trainers, num_reviewers, preset_filename, rate}}
         "active_domains": [], # List of domain names currently added by user for multi-config
-        "final_sim_config": None # Added to store the config used for the last successful run
+        "final_sim_config": None, # Added to store the config used for the last successful run
+        "default_preset_loaded_on_init": False # Flag to ensure default preset loads only once
     }
     for key, val in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = val
+
+    # Attempt to load "reviewer_bottleneck.json" by default for single config mode on first session load
+    if not st.session_state.get("default_preset_loaded_on_init"):
+        default_preset_filename = "reviewer_bottleneck.json"
+        default_preset_path = os.path.join(CONFIG_DIR, default_preset_filename)
+        if os.path.exists(default_preset_path):
+            try:
+                with open(default_preset_path, 'r') as f:
+                    config_data = json.load(f)
+                populate_session_state_from_config_dict(config_data, st.session_state)
+                st.session_state.current_simulation_name = filename_to_pretty_name(default_preset_filename[:-5])
+                st.sidebar.success(f"Loaded default preset: {st.session_state.current_simulation_name}") # Optional: notify user
+            except Exception as e:
+                st.sidebar.warning(f"Could not load default preset '{default_preset_filename}': {e}")
+        # else: # Optionally handle if default preset is missing
+            # st.sidebar.caption(f"Default preset '{default_preset_filename}' not found.")
+        st.session_state.default_preset_loaded_on_init = True
 
 init_parameter_session_state()
 
