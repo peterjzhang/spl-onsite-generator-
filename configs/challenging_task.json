@@ -1,0 +1,30 @@
+{
+    "simulation_settings": {
+        "num_trainers": 26,
+        "num_reviewers": 25,
+        "simulation_days": 21
+    },
+    "trainer_config": {
+        "max_hours_per_week": 40.0,
+        "target_hours_per_day": 5.0,
+        "target_hours_per_day_noise": 1.0,
+        "writing_hours": 15.5,
+        "writing_hours_noise": 1.0,
+        "revision_hours": 8.25,
+        "revision_hours_noise": 1.0,
+        "average_initial_quality": 0.24,
+        "average_initial_quality_noise": 0.2,
+        "revision_improvement": 0.1,
+        "revision_improvement_noise": 0.03,
+        "revision_priority": 0.7
+    },
+    "reviewer_config": {
+        "max_hours_per_week": 40.0,
+        "target_hours_per_day": 7.0,
+        "target_hours_per_day_noise": 1.0,
+        "review_hours": 2.75,
+        "review_hours_noise": 1.0,
+        "quality_threshold": 0.9,
+        "quality_threshold_noise": 0.05
+    }
+}
