@@ -10,24 +10,26 @@ WORK_INCREMENT_HOURS = 0.5  # Minimum work block
 
 
 def sample_gamma_from_mean_cv(mean: float, cv: float) -> float:
-    """Sample from Gamma distribution given mean and coefficient of variation.
+    """
+    Sample from Gamma(shape, scale) where shape = 1/cv^2 and scale = mean*cv^2
 
     Args:
-        mean: Desired mean of the distribution
-        cv: Coefficient of variation (std/mean ratio)
+        mean: The desired mean of the distribution
+        cv: The coefficient of variation (std/mean)
 
     Returns:
-        Sample from Gamma(shape, scale) where shape = 1/cv² and scale = mean*cv²
+        A sample from the gamma distribution
     """
+    # For Gamma distribution: mean = shape * scale, variance = shape * scale^2
+    # We want: mean = given, cv = std/mean, so std = cv * mean
+    # variance = (cv * mean)^2 = cv^2 * mean^2
+    # Therefore: shape * scale^2 = cv^2 * mean^2
+    # And: shape * scale = mean
+    # Solving: shape = 1/cv^2, scale = mean * cv^2
+
+    # Handle edge cases
     if mean <= 0 or cv <= 0:
         return max(0.01, mean)  # Fallback for invalid parameters
-
-    # For Gamma distribution: mean = shape * scale, variance = shape * scale²
-    # If cv = std/mean, then std = cv * mean
-    # variance = (cv * mean)² = cv² * mean²
-    # Therefore: shape * scale² = cv² * mean²
-    # And: shape * scale = mean
-    # Solving: shape = 1/cv², scale = mean * cv²
 
     shape = 1.0 / (cv * cv)
     scale = mean * cv * cv
@@ -854,7 +856,7 @@ class Simulation:
                         or t.status == TaskStatus.FIXING_DONE
                     )
                     and t.owner_domain == reviewer.domain_name
-¬                    and t.reviewer_id
+                    and t.reviewer_id
                     is None  # Only select tasks not yet assigned to a reviewer
                 )
             )
