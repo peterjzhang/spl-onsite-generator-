@@ -424,7 +424,7 @@ st.sidebar.download_button(
 if st.session_state.simulation_mode == "Single Configuration":
     st.sidebar.subheader("General Simulation Settings (Single Config)")
     st.session_state.num_trainers = st.sidebar.slider(
-        "Writer Bottleneck",
+        "Number of Writers",
         1,
         100,
         st.session_state.num_trainers,
