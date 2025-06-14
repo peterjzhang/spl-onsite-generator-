@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-This simulation engine models a task creation and review workflow. It simulates a number of "Trainers" who create and revise tasks, and "Reviewers" who review these tasks, either signing them off or sending them back for revision. The simulation runs for a configurable number of days, tracking various metrics about task progression, agent workload, and task quality.
+This simulation engine models a task creation and review workflow. It simulates a number of "Writers" (internally called "Trainers") who create and revise tasks, and "Reviewers" who review these tasks, either signing them off or sending them back for revision. The simulation runs for a configurable number of days, tracking various metrics about task progression, agent workload, and task quality.
 
 The engine is designed to be flexible, allowing for different configurations of agent behaviors, capacities, and task characteristics, potentially across multiple distinct "domains."
 

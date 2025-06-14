@@ -378,6 +378,11 @@ class TrainerAgent(BaseAgent):
                 task.revision_count += 1
                 task.update_from_quality()
                 task.status = TaskStatus.FIXING_DONE
+                # Clear reviewer assignment so any reviewer can pick up the revised task
+                task.reviewer_id = None
+                task.reviewer_domain = None
+                # Reset review progress for the new review cycle
+                task.review_progress_hours = 0.0
                 self.current_task_id = None  # Phase complete
                 self.current_phase = None
             else:  # Still in progress

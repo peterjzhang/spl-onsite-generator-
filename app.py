@@ -424,7 +424,7 @@ st.sidebar.download_button(
 if st.session_state.simulation_mode == "Single Configuration":
     st.sidebar.subheader("General Simulation Settings (Single Config)")
     st.session_state.num_trainers = st.sidebar.slider(
-        "Number of Trainers",
+        "Writer Bottleneck",
         1,
         100,
         st.session_state.num_trainers,
@@ -446,9 +446,9 @@ if st.session_state.simulation_mode == "Single Configuration":
         key="s_simulation_days_single",
     )
 
-    st.sidebar.subheader("Trainer Agent Configuration (Single Config)")
+    st.sidebar.subheader("Writer Agent Configuration (Single Config)")
     st.session_state.trainer_max_hours_per_week = st.sidebar.slider(
-        "Trainer: Max Hours/Week",
+        "Writer: Max Hours/Week",
         10.0,
         80.0,
         st.session_state.trainer_max_hours_per_week,
@@ -456,7 +456,7 @@ if st.session_state.simulation_mode == "Single Configuration":
         key="s_trainer_max_hours_week_single",
     )
     st.session_state.trainer_target_hours_per_day = st.sidebar.slider(
-        "Trainer: Target Hours/Day (Mean)",
+        "Writer: Target Hours/Day (Mean)",
         1.0,
         12.0,
         st.session_state.trainer_target_hours_per_day,
@@ -473,7 +473,7 @@ if st.session_state.simulation_mode == "Single Configuration":
         key="s_trainer_target_hours_noise_single",
     )
     st.session_state.trainer_writing_hours = st.sidebar.slider(
-        "Trainer: Writing Hours/Task (Mean)",
+        "Writer: Writing Hours/Task (Mean)",
         1.0,
         20.0,
         st.session_state.trainer_writing_hours,
@@ -490,7 +490,7 @@ if st.session_state.simulation_mode == "Single Configuration":
         key="s_trainer_writing_hours_noise_single",
     )
     st.session_state.trainer_revision_hours = st.sidebar.slider(
-        "Trainer: Revision Hours/Task (Mean)",
+        "Writer: Revision Hours/Task (Mean)",
         0.5,
         10.0,
         st.session_state.trainer_revision_hours,
@@ -507,7 +507,7 @@ if st.session_state.simulation_mode == "Single Configuration":
         key="s_trainer_revision_hours_noise_single",
     )
     st.session_state.trainer_avg_initial_quality = st.sidebar.slider(
-        "Trainer: Average Initial Quality (Normal Mean)",
+        "Writer: Average Initial Quality (Normal Mean)",
         0.0,
         1.0,
         st.session_state.trainer_avg_initial_quality,
@@ -524,7 +524,7 @@ if st.session_state.simulation_mode == "Single Configuration":
         key="s_trainer_avg_initial_quality_noise_single",
     )
     st.session_state.trainer_revision_improvement = st.sidebar.slider(
-        "Trainer: Revision Quality Improvement (Mean)",
+        "Writer: Revision Quality Improvement (Mean)",
         0.0,
         0.5,
         st.session_state.trainer_revision_improvement,
@@ -541,7 +541,7 @@ if st.session_state.simulation_mode == "Single Configuration":
         key="s_trainer_revision_improvement_noise_single",
     )
     st.session_state.trainer_revision_priority = st.sidebar.slider(
-        "Trainer: Revision Priority (Prob)",
+        "Writer: Revision Priority (Prob)",
         0.0,
         1.0,
         st.session_state.trainer_revision_priority,
@@ -623,7 +623,7 @@ if st.session_state.simulation_mode == "Single Configuration":
 elif st.session_state.simulation_mode == "Multi-Domain Configuration":
     st.sidebar.subheader("Multi-Domain Setup")
     st.sidebar.markdown(
-        "Define agent groups for different domains. Each domain uses a global preset for detailed agent characteristics, including number of trainers/reviewers."
+        "Define agent groups for different domains. Each domain uses a global preset for detailed agent characteristics, including number of writers/reviewers."
     )
 
     # Initialize active_domains from PREDEFINED_DOMAINS_SETUP if empty
@@ -735,7 +735,7 @@ elif st.session_state.simulation_mode == "Multi-Domain Configuration":
                     ] = 0
                 st.rerun()
 
-            # Display the number of trainers/reviewers from the loaded preset, applying the scale factor
+            # Display the number of writers/reviewers from the loaded preset, applying the scale factor
             if domain_config_entry.get("preset_filename"):
                 loaded_trainers_base = domain_config_entry.get("loaded_num_trainers", 0)
                 loaded_reviewers_base = domain_config_entry.get(
@@ -743,9 +743,7 @@ elif st.session_state.simulation_mode == "Multi-Domain Configuration":
                 )
                 scale = domain_config_entry.get("scale_factor", 1.0)
 
-                st.markdown(
-                    f"_Base Trainers (from preset): **{loaded_trainers_base}**_"
-                )
+                st.markdown(f"_Base Writers (from preset): **{loaded_trainers_base}**_")
                 st.markdown(
                     f"_Base Reviewers (from preset): **{loaded_reviewers_base}**_"
                 )
@@ -754,7 +752,7 @@ elif st.session_state.simulation_mode == "Multi-Domain Configuration":
                     scaled_trainers = max(0, int(loaded_trainers_base * scale))
                     scaled_reviewers = max(0, int(loaded_reviewers_base * scale))
                     st.markdown(
-                        f"_**Scaled Trainers for Sim: {scaled_trainers}**_ ({scale:.1f}x)"
+                        f"_**Scaled Writers for Sim: {scaled_trainers}**_ ({scale:.1f}x)"
                     )
                     st.markdown(
                         f"_**Scaled Reviewers for Sim: {scaled_reviewers}**_ ({scale:.1f}x)"
@@ -893,7 +891,7 @@ if st.sidebar.button("Run Simulation", key="run_sim_button"):
 
                 if actual_num_trainers == 0 and actual_num_reviewers == 0:
                     st.sidebar.warning(
-                        f"Skipping domain '{domain_detail['display_name']}' as its selected preset ('{preset_filename_for_domain}') and scale factor ({scale_factor}x) results in 0 trainers and 0 reviewers."
+                        f"Skipping domain '{domain_detail['display_name']}' as its selected preset ('{preset_filename_for_domain}') and scale factor ({scale_factor}x) results in 0 writers and 0 reviewers."
                     )
                     continue
 
@@ -1371,7 +1369,7 @@ if st.session_state.simulation_run and hasattr(st.session_state, "df_summary"):
 
         # Trainer Productivity Histogram
         if hasattr(st.session_state, "sim_trainers") and st.session_state.sim_trainers:
-            trainer_signed_off_counts = [
+            writer_signed_off_counts = [
                 sum(
                     1
                     for t in st.session_state.tasks_final_state
@@ -1381,10 +1379,10 @@ if st.session_state.simulation_run and hasattr(st.session_state, "df_summary"):
             ]
 
             with col1:
-                st.markdown("**Trainer Productivity** (Tasks Signed Off - Owned)")
-                if trainer_signed_off_counts:
+                st.markdown("**Writer Productivity** (Tasks Signed Off - Owned)")
+                if writer_signed_off_counts:
                     source = pd.DataFrame(
-                        {"Tasks Signed Off (Owned)": trainer_signed_off_counts}
+                        {"Tasks Signed Off (Owned)": writer_signed_off_counts}
                     )
                     chart = (
                         alt.Chart(source)
@@ -1395,17 +1393,17 @@ if st.session_state.simulation_run and hasattr(st.session_state, "df_summary"):
                                 bin=alt.Bin(maxbins=10),
                                 title="Tasks Signed Off (Owned)",
                             ),
-                            alt.Y("count()", title="Number of Trainers"),
+                            alt.Y("count()", title="Number of Writers"),
                         )
-                        .properties(title="Trainer Output Distribution")
+                        .properties(title="Writer Output Distribution")
                     )
                     st.altair_chart(chart, use_container_width=True)
                 else:
-                    st.write("No tasks signed off by trainers to plot.")
+                    st.write("No tasks signed off by writers to plot.")
         else:
             with col1:
-                st.markdown("**Trainer Productivity**")
-                st.write("No trainer data for productivity histogram.")
+                st.markdown("**Writer Productivity**")
+                st.write("No writer data for productivity histogram.")
 
         # Reviewer Productivity Histogram
         if (
