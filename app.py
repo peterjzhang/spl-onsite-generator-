@@ -388,12 +388,28 @@ if uploaded_config_file is not None:
             # Make sure to reset the file pointer before reading, if it might have been read before
             uploaded_config_file.seek(0)
             config_data = json.load(uploaded_config_file)
-            populate_session_state_from_config_dict(config_data, st.session_state)
+
+            # Check if this is a multi-domain configuration
+            if config_data.get("simulation_mode") == "Multi-Domain Configuration":
+                # Load multi-domain configuration
+                st.session_state.simulation_mode = "Multi-Domain Configuration"
+                st.session_state.simulation_days = config_data.get(
+                    "simulation_days", 21
+                )
+                st.session_state.domain_configs = config_data.get("domain_configs", {})
+                st.session_state.active_domains = config_data.get("active_domains", [])
+                st.session_state.current_simulation_name = config_data.get(
+                    "current_simulation_name", ""
+                )
+                st.sidebar.success("Uploaded multi-domain configuration loaded!")
+            else:
+                # Load single configuration (legacy format)
+                populate_session_state_from_config_dict(config_data, st.session_state)
+                st.sidebar.success("Uploaded single configuration loaded!")
 
             st.session_state.last_uploaded_file_id = (
                 current_file_id  # Mark this file ID as processed
             )
-            st.sidebar.success("Uploaded configuration loaded!")
         except json.JSONDecodeError:
             st.sidebar.error("Invalid JSON file in uploader.")
             st.session_state.last_uploaded_file_id = (
@@ -405,8 +421,22 @@ if uploaded_config_file is not None:
                 None  # Allow re-processing if error on this file
             )
 
-current_config_dict = get_config_from_session_state(st.session_state)
-json_export_string = json.dumps(current_config_dict, indent=4)
+# Export functionality - make it mode-aware
+if st.session_state.simulation_mode == "Single Configuration":
+    current_config_dict = get_config_from_session_state(st.session_state)
+    json_export_string = json.dumps(current_config_dict, indent=4)
+    export_label = "Download Current Single Configuration JSON"
+else:  # Multi-Domain Configuration
+    # For multi-domain, export the domain configuration setup
+    multi_domain_config = {
+        "simulation_mode": "Multi-Domain Configuration",
+        "simulation_days": st.session_state.get("simulation_days", 21),
+        "domain_configs": st.session_state.get("domain_configs", {}),
+        "active_domains": st.session_state.get("active_domains", []),
+        "current_simulation_name": st.session_state.get("current_simulation_name", ""),
+    }
+    json_export_string = json.dumps(multi_domain_config, indent=4)
+    export_label = "Download Current Multi-Domain Configuration JSON"
 
 # Determine default filename for config export using the new helper
 config_export_filename = generate_download_filename(
@@ -414,7 +444,7 @@ config_export_filename = generate_download_filename(
 )
 
 st.sidebar.download_button(
-    label="Download Current Configuration JSON",
+    label=export_label,
     data=json_export_string,
     file_name=config_export_filename,
     mime="application/json",
@@ -903,7 +933,7 @@ if st.sidebar.button("Run Simulation", key="run_sim_button"):
 
                 domain_setups_for_sim.append(
                     DomainSimulationSetup(
-                        domain_name=domain_detail["display_name"],
+                        domain_name=domain_key,  # Use domain key instead of display_name
                         num_trainers=actual_num_trainers,  # Use scaled count
                         num_reviewers=actual_num_reviewers,  # Use scaled count
                         trainer_cfg=domain_trainer_cfg,
