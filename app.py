@@ -8,8 +8,7 @@ import altair as alt  # Added for better histograms
 import datetime  # Added for timestamped filenames
 from task_simulator import (
     TaskStatus,
-    TrainerConfig,
-    ReviewerConfig,
+    PerformanceLevelConfig,
     SimulationConfig,
     DomainSimulationSetup,
     Simulation,
@@ -837,7 +836,7 @@ if st.sidebar.button("Run Simulation", key="run_sim_button"):
 
     if st.session_state.simulation_mode == "Single Configuration":
         # Create a single DomainSimulationSetup from the main session state parameters
-        single_trainer_cfg = TrainerConfig(
+        single_trainer_cfg = PerformanceLevelConfig(
             max_hours_per_week=st.session_state.trainer_max_hours_per_week,
             target_hours_per_day=st.session_state.trainer_target_hours_per_day,
             target_hours_per_day_noise=st.session_state.trainer_target_hours_per_day_noise,
@@ -851,7 +850,7 @@ if st.sidebar.button("Run Simulation", key="run_sim_button"):
             revision_improvement_noise=st.session_state.trainer_revision_improvement_noise,
             revision_priority=st.session_state.trainer_revision_priority,
         )
-        single_reviewer_cfg = ReviewerConfig(
+        single_reviewer_cfg = PerformanceLevelConfig(
             max_hours_per_week=st.session_state.reviewer_max_hours_per_week,
             target_hours_per_day=st.session_state.reviewer_target_hours_per_day,
             target_hours_per_day_noise=st.session_state.reviewer_target_hours_per_day_noise,
@@ -868,10 +867,14 @@ if st.sidebar.button("Run Simulation", key="run_sim_button"):
         domain_setups_for_sim.append(
             DomainSimulationSetup(
                 domain_name=domain_name_single,
-                num_trainers=st.session_state.num_trainers,
-                num_reviewers=st.session_state.num_reviewers,
-                trainer_cfg=single_trainer_cfg,
-                reviewer_cfg=single_reviewer_cfg,
+                num_top_performers=max(
+                    1, st.session_state.num_reviewers
+                ),  # Reviewers become top performers
+                num_normal_contractors=st.session_state.num_trainers,  # Trainers become normal contractors
+                num_bad_contractors=0,  # No bad contractors in single config mode
+                top_performer_cfg=single_reviewer_cfg,  # Use reviewer config for top performers
+                normal_contractor_cfg=single_trainer_cfg,  # Use trainer config for normal contractors
+                bad_contractor_cfg=single_trainer_cfg,  # Dummy config (not used)
             )
         )
 
@@ -928,16 +931,20 @@ if st.sidebar.button("Run Simulation", key="run_sim_button"):
                 loaded_trainer_cfg_data = preset_data.get("trainer_config", {})
                 loaded_reviewer_cfg_data = preset_data.get("reviewer_config", {})
 
-                domain_trainer_cfg = TrainerConfig(**loaded_trainer_cfg_data)
-                domain_reviewer_cfg = ReviewerConfig(**loaded_reviewer_cfg_data)
+                domain_trainer_cfg = PerformanceLevelConfig(**loaded_trainer_cfg_data)
+                domain_reviewer_cfg = PerformanceLevelConfig(**loaded_reviewer_cfg_data)
 
                 domain_setups_for_sim.append(
                     DomainSimulationSetup(
                         domain_name=domain_key,  # Use domain key instead of display_name
-                        num_trainers=actual_num_trainers,  # Use scaled count
-                        num_reviewers=actual_num_reviewers,  # Use scaled count
-                        trainer_cfg=domain_trainer_cfg,
-                        reviewer_cfg=domain_reviewer_cfg,
+                        num_top_performers=max(
+                            1, actual_num_reviewers
+                        ),  # Reviewers become top performers
+                        num_normal_contractors=actual_num_trainers,  # Trainers become normal contractors
+                        num_bad_contractors=0,  # No bad contractors in this mode
+                        top_performer_cfg=domain_reviewer_cfg,  # Use reviewer config for top performers
+                        normal_contractor_cfg=domain_trainer_cfg,  # Use trainer config for normal contractors
+                        bad_contractor_cfg=domain_trainer_cfg,  # Dummy config (not used)
                     )
                 )
             except FileNotFoundError:
@@ -982,8 +989,7 @@ if st.sidebar.button("Run Simulation", key="run_sim_button"):
         st.session_state.df_summary = df_summary
         st.session_state.simulation_run = True
         st.session_state.tasks_final_state = simulation.tasks
-        st.session_state.sim_trainers = simulation.trainers
-        st.session_state.sim_reviewers = simulation.reviewers
+        st.session_state.sim_agents = simulation.agents
         st.session_state.final_sim_config = (
             sim_cfg_object_local  # Store the successful config
         )

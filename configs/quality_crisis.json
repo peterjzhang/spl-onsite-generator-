@@ -1,0 +1,73 @@
+{
+  "simulation_days": 21,
+  "week_length_days": 7,
+  "random_seed": 555,
+  "domain_setups": [
+    {
+      "domain_name": "QualityCrisis",
+      "num_top_performers": 6,
+      "num_normal_contractors": 8,
+      "num_bad_contractors": 3,
+      "top_performer_cfg": {
+        "max_hours_per_week": 45.0,
+        "target_hours_per_day": 7.5,
+        "target_hours_per_day_noise": 0.3,
+        "writing_hours": 5.5,
+        "writing_hours_noise": 0.4,
+        "revision_hours": 3.5,
+        "revision_hours_noise": 0.3,
+        "review_hours": 2.5,
+        "review_hours_noise": 0.3,
+        "average_initial_quality": 0.75,
+        "average_initial_quality_noise": 0.1,
+        "revision_improvement": 0.2,
+        "revision_improvement_noise": 0.15,
+        "quality_threshold": 0.88,
+        "quality_threshold_noise": 0.03,
+        "review_time_decay": 0.85,
+        "revision_priority": 0.6,
+        "review_time_percentage": 0.6
+      },
+      "normal_contractor_cfg": {
+        "max_hours_per_week": 40.0,
+        "target_hours_per_day": 6.0,
+        "target_hours_per_day_noise": 0.5,
+        "writing_hours": 9.0,
+        "writing_hours_noise": 0.6,
+        "revision_hours": 6.5,
+        "revision_hours_noise": 0.5,
+        "review_hours": 5.0,
+        "review_hours_noise": 0.4,
+        "average_initial_quality": 0.4,
+        "average_initial_quality_noise": 0.15,
+        "revision_improvement": 0.08,
+        "revision_improvement_noise": 0.25,
+        "quality_threshold": 0.75,
+        "quality_threshold_noise": 0.1,
+        "review_time_decay": 0.95,
+        "revision_priority": 0.3,
+        "review_time_percentage": 0.0
+      },
+      "bad_contractor_cfg": {
+        "max_hours_per_week": 35.0,
+        "target_hours_per_day": 5.0,
+        "target_hours_per_day_noise": 0.7,
+        "writing_hours": 12.0,
+        "writing_hours_noise": 0.8,
+        "revision_hours": 9.0,
+        "revision_hours_noise": 0.7,
+        "review_hours": 7.0,
+        "review_hours_noise": 0.6,
+        "average_initial_quality": 0.25,
+        "average_initial_quality_noise": 0.12,
+        "revision_improvement": 0.04,
+        "revision_improvement_noise": 0.3,
+        "quality_threshold": 0.65,
+        "quality_threshold_noise": 0.15,
+        "review_time_decay": 1.0,
+        "revision_priority": 0.2,
+        "review_time_percentage": 0.0
+      }
+    }
+  ]
+} 

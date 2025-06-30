@@ -6,10 +6,10 @@ import numpy as np
 
 
 def test_review_time_decay():
-    """Test that review time decreases when reviewing the same trainer multiple times."""
+    """Test that review time decreases when reviewing the same agent multiple times."""
 
-    # Create a reviewer with decay factor 0.8 (20% faster each time)
-    reviewer_config = task_simulator.ReviewerConfig(
+    # Create a performance config for a reviewer with decay factor 0.8 (20% faster each time)
+    reviewer_config = task_simulator.PerformanceLevelConfig(
         review_hours=4.0,
         review_hours_noise=0.0,  # No noise for predictable testing
         review_time_decay=0.8,
@@ -18,8 +18,11 @@ def test_review_time_decay():
     # Set seed for reproducible results
     np.random.seed(42)
 
-    reviewer = task_simulator.ReviewerAgent(
-        id="TestReviewer", domain_name="Test", cfg=reviewer_config
+    reviewer = task_simulator.Agent(
+        id="TestReviewer",
+        domain_name="Test",
+        performance_level="top_performer",
+        cfg=reviewer_config,
     )
 
     # Test effective review time for multiple reviews of same trainer
@@ -55,15 +58,28 @@ def test_review_time_decay():
 def test_deterministic_with_decay():
     """Test that simulations with decay remain deterministic."""
 
+    # Create performance level configs
+    top_performer_cfg = task_simulator.PerformanceLevelConfig(
+        review_time_decay=0.85, review_time_percentage=0.8
+    )
+    normal_contractor_cfg = task_simulator.PerformanceLevelConfig(
+        review_time_percentage=0.0
+    )
+    bad_contractor_cfg = task_simulator.PerformanceLevelConfig(
+        review_time_percentage=0.0
+    )
+
     config = task_simulator.SimulationConfig(
         simulation_days=5,
         domain_setups=[
             task_simulator.DomainSimulationSetup(
                 domain_name="Test",
-                num_trainers=3,
-                num_reviewers=2,
-                trainer_cfg=task_simulator.TrainerConfig(),
-                reviewer_cfg=task_simulator.ReviewerConfig(review_time_decay=0.85),
+                num_top_performers=2,
+                num_normal_contractors=2,
+                num_bad_contractors=1,
+                top_performer_cfg=top_performer_cfg,
+                normal_contractor_cfg=normal_contractor_cfg,
+                bad_contractor_cfg=bad_contractor_cfg,
             )
         ],
         random_seed=123,

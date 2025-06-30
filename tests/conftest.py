@@ -16,54 +16,100 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from task_simulator import (
     SimulationConfig,
     DomainSimulationSetup,
-    TrainerConfig,
-    ReviewerConfig,
+    PerformanceLevelConfig,
 )
 
 
 @pytest.fixture
-def basic_trainer_config():
-    """Basic trainer configuration for testing."""
-    return TrainerConfig(
+def basic_top_performer_config():
+    """Basic top performer configuration for testing."""
+    return PerformanceLevelConfig(
         max_hours_per_week=40.0,
-        target_hours_per_day=6.0,
+        target_hours_per_day=8.0,
         target_hours_per_day_noise=0.0,
         writing_hours=4.0,
         writing_hours_noise=0.0,
-        revision_hours=2.0,
+        revision_hours=1.0,
         revision_hours_noise=0.0,
-        average_initial_quality=0.7,
+        review_hours=2.0,
+        review_hours_noise=0.0,
+        average_initial_quality=0.8,
         average_initial_quality_noise=0.0,
         revision_improvement=0.1,
         revision_improvement_noise=0.0,
+        quality_threshold=0.85,
+        quality_threshold_noise=0.0,
+        review_time_decay=0.9,
         revision_priority=0.7,
+        review_time_percentage=0.5,
     )
 
 
 @pytest.fixture
-def basic_reviewer_config():
-    """Basic reviewer configuration for testing."""
-    return ReviewerConfig(
+def basic_normal_contractor_config():
+    """Basic normal contractor configuration for testing."""
+    return PerformanceLevelConfig(
         max_hours_per_week=40.0,
-        target_hours_per_day=5.0,
+        target_hours_per_day=8.0,
         target_hours_per_day_noise=0.0,
+        writing_hours=6.0,
+        writing_hours_noise=0.0,
+        revision_hours=2.0,
+        revision_hours_noise=0.0,
         review_hours=3.0,
         review_hours_noise=0.0,
-        review_time_decay=0.8,
-        quality_threshold=0.8,
+        average_initial_quality=0.7,
+        average_initial_quality_noise=0.0,
+        revision_improvement=0.08,
+        revision_improvement_noise=0.0,
+        quality_threshold=0.75,
         quality_threshold_noise=0.0,
+        review_time_decay=0.95,
+        revision_priority=0.6,
+        review_time_percentage=0.0,
     )
 
 
 @pytest.fixture
-def basic_domain_setup(basic_trainer_config, basic_reviewer_config):
+def basic_bad_contractor_config():
+    """Basic bad contractor configuration for testing."""
+    return PerformanceLevelConfig(
+        max_hours_per_week=35.0,
+        target_hours_per_day=7.0,
+        target_hours_per_day_noise=0.0,
+        writing_hours=10.0,
+        writing_hours_noise=0.0,
+        revision_hours=4.0,
+        revision_hours_noise=0.0,
+        review_hours=5.0,
+        review_hours_noise=0.0,
+        average_initial_quality=0.5,
+        average_initial_quality_noise=0.0,
+        revision_improvement=0.05,
+        revision_improvement_noise=0.0,
+        quality_threshold=0.65,
+        quality_threshold_noise=0.0,
+        review_time_decay=1.0,
+        revision_priority=0.5,
+        review_time_percentage=0.0,
+    )
+
+
+@pytest.fixture
+def basic_domain_setup(
+    basic_top_performer_config,
+    basic_normal_contractor_config,
+    basic_bad_contractor_config,
+):
     """Basic domain setup for testing."""
     return DomainSimulationSetup(
         domain_name="test_domain",
-        num_trainers=2,
-        num_reviewers=2,
-        trainer_cfg=basic_trainer_config,
-        reviewer_cfg=basic_reviewer_config,
+        num_top_performers=1,
+        num_normal_contractors=1,
+        num_bad_contractors=1,
+        top_performer_cfg=basic_top_performer_config,
+        normal_contractor_cfg=basic_normal_contractor_config,
+        bad_contractor_cfg=basic_bad_contractor_config,
     )
 
 
@@ -88,47 +134,32 @@ def seed_random():
 
 
 @pytest.fixture
-def create_trainer_config():
-    """Create a trainer configuration with optional overrides."""
+def create_performance_config():
+    """Create a performance level configuration with optional overrides."""
 
-    def _create(**overrides) -> TrainerConfig:
+    def _create(**overrides) -> PerformanceLevelConfig:
         defaults = {
             "max_hours_per_week": 40.0,
-            "target_hours_per_day": 6.0,
+            "target_hours_per_day": 8.0,
             "target_hours_per_day_noise": 0.0,
-            "writing_hours": 4.0,
+            "writing_hours": 5.0,
             "writing_hours_noise": 0.0,
             "revision_hours": 2.0,
             "revision_hours_noise": 0.0,
+            "review_hours": 2.5,
+            "review_hours_noise": 0.0,
             "average_initial_quality": 0.7,
             "average_initial_quality_noise": 0.0,
             "revision_improvement": 0.1,
             "revision_improvement_noise": 0.0,
-            "revision_priority": 0.7,
-        }
-        defaults.update(overrides)
-        return TrainerConfig(**defaults)
-
-    return _create
-
-
-@pytest.fixture
-def create_reviewer_config():
-    """Create a reviewer configuration with optional overrides."""
-
-    def _create(**overrides) -> ReviewerConfig:
-        defaults = {
-            "max_hours_per_week": 40.0,
-            "target_hours_per_day": 5.0,
-            "target_hours_per_day_noise": 0.0,
-            "review_hours": 3.0,
-            "review_hours_noise": 0.0,
-            "review_time_decay": 0.8,
             "quality_threshold": 0.8,
             "quality_threshold_noise": 0.0,
+            "review_time_decay": 0.9,
+            "revision_priority": 0.7,
+            "review_time_percentage": 0.3,
         }
         defaults.update(overrides)
-        return ReviewerConfig(**defaults)
+        return PerformanceLevelConfig(**defaults)
 
     return _create
 
@@ -139,47 +170,94 @@ def create_domain_setup():
 
     def _create(
         domain_name="test",
-        num_trainers=2,
-        num_reviewers=2,
-        trainer_overrides=None,
-        reviewer_overrides=None,
+        num_top_performers=1,
+        num_normal_contractors=1,
+        num_bad_contractors=0,
+        top_performer_overrides=None,
+        normal_contractor_overrides=None,
+        bad_contractor_overrides=None,
     ) -> DomainSimulationSetup:
-        trainer_defaults = {
+
+        # Top performer defaults
+        top_performer_defaults = {
             "max_hours_per_week": 40.0,
-            "target_hours_per_day": 6.0,
+            "target_hours_per_day": 8.0,
             "target_hours_per_day_noise": 0.0,
             "writing_hours": 4.0,
             "writing_hours_noise": 0.0,
-            "revision_hours": 2.0,
+            "revision_hours": 1.0,
             "revision_hours_noise": 0.0,
-            "average_initial_quality": 0.7,
+            "review_hours": 2.0,
+            "review_hours_noise": 0.0,
+            "average_initial_quality": 0.8,
             "average_initial_quality_noise": 0.0,
             "revision_improvement": 0.1,
             "revision_improvement_noise": 0.0,
+            "quality_threshold": 0.85,
+            "quality_threshold_noise": 0.0,
+            "review_time_decay": 0.9,
             "revision_priority": 0.7,
+            "review_time_percentage": 0.5,
         }
-        trainer_defaults.update(trainer_overrides or {})
-        trainer_cfg = TrainerConfig(**trainer_defaults)
+        top_performer_defaults.update(top_performer_overrides or {})
+        top_performer_cfg = PerformanceLevelConfig(**top_performer_defaults)
 
-        reviewer_defaults = {
+        # Normal contractor defaults
+        normal_contractor_defaults = {
             "max_hours_per_week": 40.0,
-            "target_hours_per_day": 5.0,
+            "target_hours_per_day": 8.0,
             "target_hours_per_day_noise": 0.0,
+            "writing_hours": 6.0,
+            "writing_hours_noise": 0.0,
+            "revision_hours": 2.0,
+            "revision_hours_noise": 0.0,
             "review_hours": 3.0,
             "review_hours_noise": 0.0,
-            "review_time_decay": 0.8,
-            "quality_threshold": 0.8,
+            "average_initial_quality": 0.7,
+            "average_initial_quality_noise": 0.0,
+            "revision_improvement": 0.08,
+            "revision_improvement_noise": 0.0,
+            "quality_threshold": 0.75,
             "quality_threshold_noise": 0.0,
+            "review_time_decay": 0.95,
+            "revision_priority": 0.6,
+            "review_time_percentage": 0.0,
         }
-        reviewer_defaults.update(reviewer_overrides or {})
-        reviewer_cfg = ReviewerConfig(**reviewer_defaults)
+        normal_contractor_defaults.update(normal_contractor_overrides or {})
+        normal_contractor_cfg = PerformanceLevelConfig(**normal_contractor_defaults)
+
+        # Bad contractor defaults
+        bad_contractor_defaults = {
+            "max_hours_per_week": 35.0,
+            "target_hours_per_day": 7.0,
+            "target_hours_per_day_noise": 0.0,
+            "writing_hours": 10.0,
+            "writing_hours_noise": 0.0,
+            "revision_hours": 4.0,
+            "revision_hours_noise": 0.0,
+            "review_hours": 5.0,
+            "review_hours_noise": 0.0,
+            "average_initial_quality": 0.5,
+            "average_initial_quality_noise": 0.0,
+            "revision_improvement": 0.05,
+            "revision_improvement_noise": 0.0,
+            "quality_threshold": 0.65,
+            "quality_threshold_noise": 0.0,
+            "review_time_decay": 1.0,
+            "revision_priority": 0.5,
+            "review_time_percentage": 0.0,
+        }
+        bad_contractor_defaults.update(bad_contractor_overrides or {})
+        bad_contractor_cfg = PerformanceLevelConfig(**bad_contractor_defaults)
 
         return DomainSimulationSetup(
             domain_name=domain_name,
-            num_trainers=num_trainers,
-            num_reviewers=num_reviewers,
-            trainer_cfg=trainer_cfg,
-            reviewer_cfg=reviewer_cfg,
+            num_top_performers=num_top_performers,
+            num_normal_contractors=num_normal_contractors,
+            num_bad_contractors=num_bad_contractors,
+            top_performer_cfg=top_performer_cfg,
+            normal_contractor_cfg=normal_contractor_cfg,
+            bad_contractor_cfg=bad_contractor_cfg,
         )
 
     return _create
@@ -191,38 +269,76 @@ def create_simulation_config():
 
     def _create(simulation_days=10, domains=None, random_seed=42) -> SimulationConfig:
         if domains is None:
-            # Create default domain
-            trainer_cfg = TrainerConfig(
+            # Create default domain with performance levels
+            top_performer_cfg = PerformanceLevelConfig(
                 max_hours_per_week=40.0,
-                target_hours_per_day=6.0,
+                target_hours_per_day=8.0,
                 target_hours_per_day_noise=0.0,
                 writing_hours=4.0,
                 writing_hours_noise=0.0,
-                revision_hours=2.0,
+                revision_hours=1.0,
                 revision_hours_noise=0.0,
-                average_initial_quality=0.7,
+                review_hours=2.0,
+                review_hours_noise=0.0,
+                average_initial_quality=0.8,
                 average_initial_quality_noise=0.0,
                 revision_improvement=0.1,
                 revision_improvement_noise=0.0,
+                quality_threshold=0.85,
+                quality_threshold_noise=0.0,
+                review_time_decay=0.9,
                 revision_priority=0.7,
+                review_time_percentage=0.5,
             )
-            reviewer_cfg = ReviewerConfig(
+            normal_contractor_cfg = PerformanceLevelConfig(
                 max_hours_per_week=40.0,
-                target_hours_per_day=5.0,
+                target_hours_per_day=8.0,
                 target_hours_per_day_noise=0.0,
+                writing_hours=6.0,
+                writing_hours_noise=0.0,
+                revision_hours=2.0,
+                revision_hours_noise=0.0,
                 review_hours=3.0,
                 review_hours_noise=0.0,
-                review_time_decay=0.8,
-                quality_threshold=0.8,
+                average_initial_quality=0.7,
+                average_initial_quality_noise=0.0,
+                revision_improvement=0.08,
+                revision_improvement_noise=0.0,
+                quality_threshold=0.75,
                 quality_threshold_noise=0.0,
+                review_time_decay=0.95,
+                revision_priority=0.6,
+                review_time_percentage=0.0,
+            )
+            bad_contractor_cfg = PerformanceLevelConfig(
+                max_hours_per_week=35.0,
+                target_hours_per_day=7.0,
+                target_hours_per_day_noise=0.0,
+                writing_hours=10.0,
+                writing_hours_noise=0.0,
+                revision_hours=4.0,
+                revision_hours_noise=0.0,
+                review_hours=5.0,
+                review_hours_noise=0.0,
+                average_initial_quality=0.5,
+                average_initial_quality_noise=0.0,
+                revision_improvement=0.05,
+                revision_improvement_noise=0.0,
+                quality_threshold=0.65,
+                quality_threshold_noise=0.0,
+                review_time_decay=1.0,
+                revision_priority=0.5,
+                review_time_percentage=0.0,
             )
             domains = [
                 DomainSimulationSetup(
                     domain_name="test",
-                    num_trainers=2,
-                    num_reviewers=2,
-                    trainer_cfg=trainer_cfg,
-                    reviewer_cfg=reviewer_cfg,
+                    num_top_performers=1,
+                    num_normal_contractors=1,
+                    num_bad_contractors=0,
+                    top_performer_cfg=top_performer_cfg,
+                    normal_contractor_cfg=normal_contractor_cfg,
+                    bad_contractor_cfg=bad_contractor_cfg,
                 )
             ]
 

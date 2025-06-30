@@ -1,30 +1,73 @@
 {
-    "simulation_settings": {
-        "num_trainers": 12,
-        "num_reviewers": 8,
-        "simulation_days": 21
-    },
-    "trainer_config": {
+  "simulation_days": 21,
+  "week_length_days": 7,
+  "random_seed": 654,
+  "domain_setups": [
+    {
+      "domain_name": "LaxReviewer",
+      "num_top_performers": 2,
+      "num_normal_contractors": 8,
+      "num_bad_contractors": 2,
+      "top_performer_cfg": {
+        "max_hours_per_week": 40.0,
+        "target_hours_per_day": 8.0,
+        "target_hours_per_day_noise": 0.25,
+        "writing_hours": 7.0,
+        "writing_hours_noise": 0.3,
+        "revision_hours": 3.5,
+        "revision_hours_noise": 0.4,
+        "review_hours": 9.25,
+        "review_hours_noise": 0.35,
+        "average_initial_quality": 0.6,
+        "average_initial_quality_noise": 0.15,
+        "revision_improvement": 0.2,
+        "revision_improvement_noise": 0.25,
+        "quality_threshold": 0.81,
+        "quality_threshold_noise": 0.25,
+        "review_time_decay": 0.85,
+        "revision_priority": 0.8,
+        "review_time_percentage": 0.6
+      },
+      "normal_contractor_cfg": {
         "max_hours_per_week": 40.0,
         "target_hours_per_day": 4.5,
-        "target_hours_per_day_noise": 1.0,
+        "target_hours_per_day_noise": 0.5,
         "writing_hours": 11.5,
-        "writing_hours_noise": 1.0,
+        "writing_hours_noise": 0.5,
         "revision_hours": 5.0,
-        "revision_hours_noise": 1.0,
+        "revision_hours_noise": 0.5,
+        "review_hours": 6.0,
+        "review_hours_noise": 0.4,
         "average_initial_quality": 0.46,
         "average_initial_quality_noise": 0.2,
         "revision_improvement": 0.19,
-        "revision_improvement_noise": 0.04,
-        "revision_priority": 0.7
-    },
-    "reviewer_config": {
-        "max_hours_per_week": 40.0,
-        "target_hours_per_day": 11.0,
-        "target_hours_per_day_noise": 1.0,
-        "review_hours": 9.25,
-        "review_hours_noise": 1.0,
-        "quality_threshold": 0.81,
-        "quality_threshold_noise": 0.25
+        "revision_improvement_noise": 0.4,
+        "quality_threshold": 0.75,
+        "quality_threshold_noise": 0.15,
+        "review_time_decay": 0.95,
+        "revision_priority": 0.7,
+        "review_time_percentage": 0.0
+      },
+      "bad_contractor_cfg": {
+        "max_hours_per_week": 35.0,
+        "target_hours_per_day": 4.0,
+        "target_hours_per_day_noise": 0.6,
+        "writing_hours": 15.0,
+        "writing_hours_noise": 0.7,
+        "revision_hours": 8.0,
+        "revision_hours_noise": 0.7,
+        "review_hours": 8.0,
+        "review_hours_noise": 0.6,
+        "average_initial_quality": 0.3,
+        "average_initial_quality_noise": 0.25,
+        "revision_improvement": 0.1,
+        "revision_improvement_noise": 0.5,
+        "quality_threshold": 0.65,
+        "quality_threshold_noise": 0.2,
+        "review_time_decay": 1.0,
+        "revision_priority": 0.5,
+        "review_time_percentage": 0.0
+      }
     }
-}
+  ]
+} 
